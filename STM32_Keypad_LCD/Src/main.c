@@ -6,6 +6,7 @@
 //  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 //#endif
 
+//General configuration
 uint32_t volatile *pRCC_AHB1ENR	= (uint32_t*)0x40023830;	// Peripheral clock enable register
 uint32_t volatile *pGPIOA_MODER	= (uint32_t*)0x40020000;
 uint32_t volatile *pGPIOB_MODER	= (uint32_t*)0x40020400;
