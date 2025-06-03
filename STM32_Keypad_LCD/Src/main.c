@@ -65,11 +65,11 @@ void initializeLCD()
 	delay(1);	// Wait for 1ms
 
 	sendCommand(0x38);
-	sendCommand(0x08);	// Display on, cursor off
+	sendCommand(0x08);		// Display on, cursor off
 	//sendCommand(0x0F);	// Display on, cursor blinking. Initially it worked here. I grayed it out to test the line at the end of the sequence.
-	sendCommand(0x01);	// Clear display
-	sendCommand(0x06);	// Shift cursor right
-	sendCommand(0x0F);	// Display on, cursor blinking. Testing with the line here to see if now it works.
+	sendCommand(0x01);		// Clear display
+	sendCommand(0x06);		// Shift cursor right
+	sendCommand(0x0F);		// Display on, cursor blinking. Testing with the line here to see if now it works.
 }
 
 void writeCharacterInLCD(char data)
@@ -83,6 +83,170 @@ void writeCharacterInLCD(char data)
 	delay(2);
 }
 
+void scanButtons(void)
+{
+	delayDebounce();	// Delay needed to avoid the red buttons from detecting multiple strokes
+			// Scan columns when ROW 1 is LOW
+			*pGPIOB_MODER |= (0x55 << 8);	// PB4-PB7 as Outputs (ROWS).
+			*pGPIOB_BSRR |= 0x000000F0;		// PB4-PB7 set to high
+			*pGPIOB_MODER &= ~(0xFF << 8);	// Disable all outputs PB4-PB7
+			*pGPIOB_MODER |= (1 << 8);		// Enable only PB4
+			*pGPIOB_BSRR |= (0x0F << 4);	// First all outputs to 1
+			*pGPIOB_BSRR = (0x01 << 20);	// then, only PB4 = 0
+
+			// COLUMN 1
+			if (!(*pGPIOA_IDR & (0x0001 << 4))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					//printf("1\n");
+					writeCharacterInLCD('1');
+				}
+			}
+
+			// COLUMN 2
+			if (!(*pGPIOA_IDR & (0x0001 << 5))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					writeCharacterInLCD('2');
+				}
+			}
+
+			// COLUMN 3
+			if (!(*pGPIOA_IDR & (0x0001 << 6))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					writeCharacterInLCD('3');
+				}
+			}
+
+			// COLUMN 4
+			if (!(*pGPIOA_IDR & (0x0001 << 7))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					writeCharacterInLCD('A');
+				}
+			}
+
+			// Scan columns when ROW 2 is LOW
+			*pGPIOB_MODER |= (0x55 << 8);	// PB4-PB7 as Outputs (ROWS).
+			*pGPIOB_BSRR |= 0x000000F0;		// PB4-PB7 set to high
+			*pGPIOB_MODER &= ~(0xFF << 8);	// Disable all outputs PB4-PB7
+			*pGPIOB_MODER |= (1 << 10);	// Enable only PB5
+			*pGPIOB_BSRR |= (0xF << 4);		// First all outputs to 1
+			*pGPIOB_BSRR = (0x01 << 21);	// then, only PB5 = 0
+
+			// COLUMN 1
+			if (!(*pGPIOA_IDR & (0x0001 << 4))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					writeCharacterInLCD('4');
+				}
+			}
+
+			// COLUMN 2
+			if (!(*pGPIOA_IDR & (0x0001 << 5))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					writeCharacterInLCD('5');
+				}
+			}
+
+			// COLUMN 3
+			if (!(*pGPIOA_IDR & (0x0001 << 6))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					writeCharacterInLCD('6');
+				}
+			}
+
+			// COLUMN 4
+			if (!(*pGPIOA_IDR & (0x0001 << 7))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					writeCharacterInLCD('B');
+				}
+			}
+
+			// Scan columns when ROW 3 is LOW
+			*pGPIOB_MODER |= (0x55 << 8);	// PB4-PB7 as Outputs (ROWS).
+			*pGPIOB_BSRR |= 0x000000F0;		// PB4-PB7 set to high
+			*pGPIOB_MODER &= ~(0xFF << 8);	// Disable all outputs PB4-PB7
+			*pGPIOB_MODER |= (1 << 12);		// Enable only PB6
+			*pGPIOB_BSRR |= (0xF << 4);		// First all outputs to 1
+			*pGPIOB_BSRR = (0x01 << 22);	// then, only PB6 = 0
+
+			// COLUMN 1
+			if (!(*pGPIOA_IDR & (0x0001 << 4))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					writeCharacterInLCD('7');
+				}
+			}
+
+			// COLUMN 2
+			if (!(*pGPIOA_IDR & (0x0001 << 5))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					writeCharacterInLCD('8');
+				}
+			}
+
+			// COLUMN 3
+			if (!(*pGPIOA_IDR & (0x0001 << 6))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					writeCharacterInLCD('9');
+				}
+			}
+
+			// COLUMN 4
+			if (!(*pGPIOA_IDR & (0x0001 << 7))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					writeCharacterInLCD('C');
+				}
+			}
+
+			// Scan columns when ROW 4 is LOW
+			*pGPIOB_MODER |= (0x55 << 8);	// PB4-PB7 as Outputs (ROWS).
+			*pGPIOB_BSRR |= 0x000000F0;		// PB4-PB7 set to high
+			*pGPIOB_MODER &= ~(0xFF << 8);	// Disable all outputs PB4-PB7
+			*pGPIOB_MODER |= (1 << 14);		// Enable only PB7
+			*pGPIOB_BSRR |= (0xF << 4);		// First all outputs to 1
+			*pGPIOB_BSRR = (0x01 << 23);	// then only PB7 = 0
+
+			// COLUMN 1
+			if (!(*pGPIOA_IDR & (0x0001 << 4))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					writeCharacterInLCD('*');
+				}
+			}
+
+			// COLUMN 2
+			if (!(*pGPIOA_IDR & (0x0001 << 5))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					writeCharacterInLCD('0');
+				}
+			}
+
+			// COLUMN 3
+			if (!(*pGPIOA_IDR & (0x0001 << 6))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					writeCharacterInLCD('#');
+				}
+			}
+
+			// COLUMN 4
+			if (!(*pGPIOA_IDR & (0x0001 << 7))){
+				delayDebounce();
+				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					writeCharacterInLCD('D');
+				}
+			}
+}
 
 int main(void)
 {
@@ -95,12 +259,9 @@ int main(void)
 
 		//3. Internal Pull-Up resistors for COLUMNS PA4, PA5, PA6, PA7
 		*pGPIOA_PUPDR |= (0x55 << 8);
-
-		//4. Configure external LED to blink
-		*pGPIOC_MODER |= (0x01 << 14);	// PC7 as output
 	// Finished keypad initialization
 
-
+	// This comes from LCD main code. This is LCD initialization
 	//	*pRCC_AHB1ENR |= 0x07;
 	//	*pGPIOC_MODER |= 0x5555;	// PC as output
 	initializeGPIO();
@@ -110,42 +271,7 @@ int main(void)
 
 		sendCommand(0x80);	// Clear display
 		delay(1);	// Wait for 1ms
-		writeCharacterInLCD('R');
-		writeCharacterInLCD('o');
-		writeCharacterInLCD('w');
-		writeCharacterInLCD(' ');
-		writeCharacterInLCD('0');
-		writeCharacterInLCD('1');
-		delay(500);
-
-		sendCommand(0xC0);	// Clear display
-		delay(1);	// Wait for 1ms
-		writeCharacterInLCD('R');
-		writeCharacterInLCD('o');
-		writeCharacterInLCD('w');
-		writeCharacterInLCD(' ');
-		writeCharacterInLCD('0');
-		writeCharacterInLCD('2');
-		delay(500);
-
-		sendCommand(0x94);	// Clear display
-		delay(1);	// Wait for 1ms
-		writeCharacterInLCD('R');
-		writeCharacterInLCD('o');
-		writeCharacterInLCD('w');
-		writeCharacterInLCD(' ');
-		writeCharacterInLCD('0');
-		writeCharacterInLCD('3');
-		delay(500);
-
-		sendCommand(0xD4);	// Clear display
-		delay(1);	// Wait for 1ms
-		writeCharacterInLCD('R');
-		writeCharacterInLCD('o');
-		writeCharacterInLCD('w');
-		writeCharacterInLCD(' ');
-		writeCharacterInLCD('0');
-		writeCharacterInLCD('4');
+		scanButtons();	// Scan buttons and print the pressed key
 		delay(500);
 
 		sendCommand(0x01);	// Clear display
