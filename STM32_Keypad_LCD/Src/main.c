@@ -28,13 +28,22 @@ void delay(uint32_t ms)
 	for (i = 0; i < ms; i++)
 	{
 		volatile uint32_t j;
-		for (j = 0; j < 8000; j++); // Assuming 8MHz clock, 1ms = 8000 cycles
+		for (j = 0; j < 4000; j++); // Assuming 8MHz clock, 1ms = 8000 cycles
 	}
 }
 
 void initializeGPIO(void)
 {
-	*pRCC_AHB1ENR |= 0x07;	// Enable GPIOA, GPIOB, GPIOC
+	//1. Enable GPIOA, GPIOB, GPIOC
+	*pRCC_AHB1ENR |= 0x07;
+
+	//2. KEYPAD Section. PA4, PA5, PA6, PA7: INPUTS (COLUMNS)
+	*pGPIOA_MODER &= ~(0xFF << 8);
+
+	//3. KEYPAD Section. Internal Pull-Up resistors for COLUMNS PA4, PA5, PA6, PA7
+	*pGPIOA_PUPDR |= (0x55 << 8);
+
+	//4. LCD Section.
 	// PC0-PC7 as data output.
 	// PC8: RS
 	// PC9: RW
@@ -62,7 +71,6 @@ void initializeLCD()
 	sendCommand(0x38);
 	delay(1);	// Wait for 1ms
 	sendCommand(0x38);
-	delay(1);	// Wait for 1ms
 
 	sendCommand(0x38);
 	sendCommand(0x08);		// Display on, cursor off
@@ -74,19 +82,20 @@ void initializeLCD()
 
 void writeCharacterInLCD(char data)
 {
-	*pGPIOC_BSRR = 0x00000100;	// Set RS. This is data
-	*pGPIOC_BSRR = 0x02000000;	// Clear RW. Write data into LCD
+	*pGPIOC_BSRR = 0x00000100;	// Set RS (PC8). This is data
+	*pGPIOC_BSRR = 0x02000000;	// Clear RW (PC9). Write data into LCD
 	*pGPIOC_ODR = (*pGPIOC_ODR & 0xFFFFFF00) | (data & 0xFF);			// Send data
 	*pGPIOC_BSRR = 0x00000400;	// Set EN
-	delay(2);					// changed from strict 1ms to 2ms to include all other commands that take longer
+	delay(1);					// changed from strict 1ms to 2ms to include all other commands that take longer
 	*pGPIOC_BSRR = 0x04000000;	// Clear EN
-	delay(2);
+	delay(1);
 }
 
 void scanButtons(void)
 {
 	delayDebounce();	// Delay needed to avoid the red buttons from detecting multiple strokes
 			// Scan columns when ROW 1 is LOW
+			*pGPIOB_MODER &= ~(0xF0 << 8);	// Reset bits PB4-PB7
 			*pGPIOB_MODER |= (0x55 << 8);	// PB4-PB7 as Outputs (ROWS).
 			*pGPIOB_BSRR |= 0x000000F0;		// PB4-PB7 set to high
 			*pGPIOB_MODER &= ~(0xFF << 8);	// Disable all outputs PB4-PB7
@@ -98,7 +107,6 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
-					//printf("1\n");
 					writeCharacterInLCD('1');
 				}
 			}
@@ -250,34 +258,14 @@ void scanButtons(void)
 
 int main(void)
 {
-	// This comes from Keypad main code. This is keypad initialization
-	//1. Enable the peripheral clock for PA and PB and PC
-		*pRCC_AHB1ENR |= 0x07;
-
-		//2. PA4, PA5, PA6, PA7: INPUTS (COLUMNS)
-		*pGPIOA_MODER &= ~(0xFF << 8);
-
-		//3. Internal Pull-Up resistors for COLUMNS PA4, PA5, PA6, PA7
-		*pGPIOA_PUPDR |= (0x55 << 8);
-	// Finished keypad initialization
-
-	// This comes from LCD main code. This is LCD initialization
-	//	*pRCC_AHB1ENR |= 0x07;
-	//	*pGPIOC_MODER |= 0x5555;	// PC as output
 	initializeGPIO();
 	initializeLCD();
+	sendCommand(0x80);	// Clear display once at the beginning
+	delay(1);	// Wait for 1ms
 
 	while(1){
-
-		sendCommand(0x80);	// Clear display
-		delay(1);	// Wait for 1ms
-		scanButtons();	// Scan buttons and print the pressed key
-		delay(500);
-
-		sendCommand(0x01);	// Clear display
-		delay(2);	// Wait for 2ms
-		sendCommand(0x02);
-		delay(2);	// Wait for 2ms
+		// Scan buttons and print the pressed key
+		scanButtons();
 	}
 
     return 0;
