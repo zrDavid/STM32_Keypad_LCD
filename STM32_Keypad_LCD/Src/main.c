@@ -17,6 +17,9 @@ uint32_t volatile *pGPIOA_IDR 	= (uint32_t*)0x40020010;
 uint32_t volatile *pGPIOA_PUPDR = (uint32_t*)0x4002000C;
 uint32_t volatile *pGPIOB_BSRR	= (uint32_t*)0x40020418;
 
+uint8_t numberColumns = 0;
+uint8_t numberRows = 0;
+
 void delayDebounce(){
 	for(uint32_t i=0; i<100000; i++);
 }
@@ -91,6 +94,47 @@ void writeCharacterInLCD(char data)
 	delay(1);
 }
 
+void setCursor(uint8_t col, uint8_t row)
+{
+	uint8_t address = 0x00;	// Default address
+
+	// Set the cursor position based on the current row and column
+	switch (row) {
+		case 0:
+			address = (0x00 + col);	// Set cursor position to the first line
+			break;
+		case 1:
+			address = (0x40 + col);	// Set cursor position to the second line
+			break;
+		case 2:
+			address = (0x14 + col);	// Set cursor position to the third line
+			break;
+		case 3:
+			address = (0x54 + col);	// Set cursor position to the fourth line
+			break;
+		default:
+			address = (0x00);	// Reset to first line if out of bounds
+			break;
+	}
+
+	sendCommand(0x80 | address);	// Set cursor position command
+}
+
+void nextCursorPosition(void)
+{
+	numberColumns++;
+	if (numberColumns >= 20) {	// Reset column count if it exceeds 15
+		numberColumns = 0;
+		numberRows++;
+		if (numberRows >= 4) {	// Reset row count if it exceeds 3
+			numberRows = 0;
+			sendCommand(0x01);	// Clear display
+			delay(1);
+		}
+	}
+	setCursor(numberColumns, numberRows);
+}
+
 void scanButtons(void)
 {
 	delayDebounce();	// Delay needed to avoid the red buttons from detecting multiple strokes
@@ -107,7 +151,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('1');
+					nextCursorPosition();
 				}
 			}
 
@@ -115,7 +161,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('2');
+					nextCursorPosition();
 				}
 			}
 
@@ -123,7 +171,10 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('3');
+					nextCursorPosition();
+
 				}
 			}
 
@@ -131,7 +182,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('A');
+					nextCursorPosition();
 				}
 			}
 
@@ -147,7 +200,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('4');
+					nextCursorPosition();
 				}
 			}
 
@@ -155,7 +210,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('5');
+					nextCursorPosition();
 				}
 			}
 
@@ -163,7 +220,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('6');
+					nextCursorPosition();
 				}
 			}
 
@@ -171,7 +230,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('B');
+					nextCursorPosition();
 				}
 			}
 
@@ -187,7 +248,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('7');
+					nextCursorPosition();
 				}
 			}
 
@@ -195,7 +258,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('8');
+					nextCursorPosition();
 				}
 			}
 
@@ -203,7 +268,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('9');
+					nextCursorPosition();
 				}
 			}
 
@@ -211,7 +278,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('C');
+					nextCursorPosition();
 				}
 			}
 
@@ -227,7 +296,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('*');
+					nextCursorPosition();
 				}
 			}
 
@@ -235,7 +306,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('0');
+					nextCursorPosition();
 				}
 			}
 
@@ -243,7 +316,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('#');
+					nextCursorPosition();
 				}
 			}
 
@@ -251,7 +326,9 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
+					setCursor(numberColumns, numberRows);
 					writeCharacterInLCD('D');
+					nextCursorPosition();
 				}
 			}
 }
