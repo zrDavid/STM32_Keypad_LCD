@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 //#if !defined(__SOFT_FP__) && defined(__ARM_FP)
 //  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
@@ -19,6 +20,7 @@ uint32_t volatile *pGPIOB_BSRR	= (uint32_t*)0x40020418;
 
 uint8_t numberColumns = 0;
 uint8_t numberRows = 0;
+bool lineOverflow = false; // Flag to indicate if 20th character written on 4th line.
 
 void delayDebounce(){
 	for(uint32_t i=0; i<100000; i++);
@@ -127,12 +129,23 @@ void nextCursorPosition(void)
 		numberColumns = 0;
 		numberRows++;
 		if (numberRows >= 4) {	// Reset row count if it exceeds 3
-			numberRows = 0;
-			sendCommand(0x01);	// Clear display
-			delay(1);
+			lineOverflow = true;	// Set overflow flag
 		}
 	}
 	setCursor(numberColumns, numberRows);
+}
+
+void lineOverflowCheck(void)
+{
+	if (lineOverflow) {
+		// Clear the display and reset the cursor position
+		sendCommand(0x01);	// Clear display
+		delay(1);
+		numberColumns = 0;	// Reset column count
+		numberRows = 0;		// Reset row count
+		lineOverflow = false; // Reset overflow flag
+		setCursor(numberColumns, numberRows); // Set cursor to 0,0 position
+	}
 }
 
 void scanButtons(void)
@@ -151,7 +164,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('1');
 					nextCursorPosition();
 				}
@@ -161,7 +174,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('2');
 					nextCursorPosition();
 				}
@@ -171,7 +184,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('3');
 					nextCursorPosition();
 
@@ -182,7 +195,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('A');
 					nextCursorPosition();
 				}
@@ -200,7 +213,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('4');
 					nextCursorPosition();
 				}
@@ -210,7 +223,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('5');
 					nextCursorPosition();
 				}
@@ -220,7 +233,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('6');
 					nextCursorPosition();
 				}
@@ -230,7 +243,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('B');
 					nextCursorPosition();
 				}
@@ -248,7 +261,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('7');
 					nextCursorPosition();
 				}
@@ -258,7 +271,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('8');
 					nextCursorPosition();
 				}
@@ -268,7 +281,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('9');
 					nextCursorPosition();
 				}
@@ -278,7 +291,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('C');
 					nextCursorPosition();
 				}
@@ -296,7 +309,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 4))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 4))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('*');
 					nextCursorPosition();
 				}
@@ -306,7 +319,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 5))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 5))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('0');
 					nextCursorPosition();
 				}
@@ -316,7 +329,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 6))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 6))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('#');
 					nextCursorPosition();
 				}
@@ -326,7 +339,7 @@ void scanButtons(void)
 			if (!(*pGPIOA_IDR & (0x0001 << 7))){
 				delayDebounce();
 				if (!(*pGPIOA_IDR & (0x0001 << 7))){
-					setCursor(numberColumns, numberRows);
+					lineOverflowCheck(); // Check if line overflow occurred
 					writeCharacterInLCD('D');
 					nextCursorPosition();
 				}
